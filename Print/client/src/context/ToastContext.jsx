@@ -1,0 +1,31 @@
+import { useState, useEffect, createContext, useContext } from 'react';
+
+const ToastContext = createContext(null);
+
+export const ToastProvider = ({ children }) => {
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = (message, type = 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  };
+
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+
+  return (
+    <ToastContext.Provider value={{ addToast }}>
+      {children}
+      <div className="toast-container">
+        {toasts.map(t => (
+          <div key={t.id} className={`toast ${t.type}`}>
+            <span>{icons[t.type]}</span>
+            <span>{t.message}</span>
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+};
+
+export const useToast = () => useContext(ToastContext);
