@@ -8,7 +8,7 @@ const SecureViewer = ({ jobId, fileName, mimeType, onClose, onPrint }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [blobUrl, setBlobUrl] = useState(null);
-  const [isObscured, setIsObscured] = useState(true); // Default to true (Hidden)
+  const [isObscured, setIsObscured] = useState(true);
   const iframeRef = useRef(null);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ const SecureViewer = ({ jobId, fileName, mimeType, onClose, onPrint }) => {
     };
   }, [jobId]);
 
-  // Anti-screenshot and window blur protection
+
   useEffect(() => {
     const handleBlur = () => setIsObscured(true);
     
@@ -76,7 +76,7 @@ const SecureViewer = ({ jobId, fileName, mimeType, onClose, onPrint }) => {
     };
   }, [addToast]);
 
-  // Block keyboard shortcuts for saving
+
   useEffect(() => {
     const blockSave = (e) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' && false)) {
@@ -97,7 +97,7 @@ const SecureViewer = ({ jobId, fileName, mimeType, onClose, onPrint }) => {
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal" onContextMenu={(e) => e.preventDefault()}>
-        {/* Header */}
+
         <div className="modal-header">
            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Shield size={18} style={{ color: 'var(--accent-primary)' }} />
@@ -111,7 +111,7 @@ const SecureViewer = ({ jobId, fileName, mimeType, onClose, onPrint }) => {
           <span>Confidentially viewing secure document. Saving is disabled.</span>
         </div>
 
-        {/* File viewer */}
+
         <div className="modal-body">
           {loading && (
             <div className="loading-center" style={{ position: 'absolute', inset: 0 }}>
@@ -165,7 +165,7 @@ const SecureViewer = ({ jobId, fileName, mimeType, onClose, onPrint }) => {
           )}
         </div>
 
-        {/* Actions */}
+
         {blobUrl && !error && (
           <div style={{
             padding: '14px 20px',

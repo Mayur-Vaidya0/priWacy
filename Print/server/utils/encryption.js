@@ -6,10 +6,7 @@ const KEY = Buffer.from(
   'utf8'
 );
 
-/**
- * Encrypt a buffer (file content) 
- * Returns { encryptedData: base64 string, iv: hex string }
- */
+
 const encryptBuffer = (buffer) => {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(ALGORITHM, KEY, iv);
@@ -20,9 +17,7 @@ const encryptBuffer = (buffer) => {
   };
 };
 
-/**
- * Decrypt encrypted base64 data back to buffer
- */
+
 const decryptBuffer = (encryptedData, ivHex) => {
   const iv = Buffer.from(ivHex, 'hex');
   const encrypted = Buffer.from(encryptedData, 'base64');

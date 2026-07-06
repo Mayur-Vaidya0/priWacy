@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Printer as PrinterIcon, Clock, QrCode, Upload, X } from 'lucide-react';
+import { Search, Printer as PrinterIcon, QrCode, ArrowRight } from 'lucide-react';
 import jsQR from 'jsqr';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Navbar from '../components/Navbar';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CustomerSearch = () => {
   const { user } = useAuth();
@@ -36,7 +37,6 @@ const CustomerSearch = () => {
         
         if (code) {
           try {
-            // Check if it's our URL format
             const url = new URL(code.data);
             const pid = url.pathname.split('/').pop();
             if (pid && pid.length >= 6) {
@@ -46,7 +46,6 @@ const CustomerSearch = () => {
               addToast('QR code is not a valid Printer ID.', 'error');
             }
           } catch {
-            // If not a URL, maybe it's just the PID text
             if (code.data.length >= 6 && code.data.length <= 10) {
               addToast('Printer ID detected!', 'success');
               navigate(`/customer/printer/${code.data}`);
@@ -64,7 +63,6 @@ const CustomerSearch = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Debounced search
   useEffect(() => {
     if (query.trim().length < 2) {
       setResults([]);
@@ -86,7 +84,6 @@ const CustomerSearch = () => {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
@@ -103,19 +100,38 @@ const CustomerSearch = () => {
     navigate(`/customer/printer/${printer.publicId}`);
   };
 
+  const steps = [
+    { title: '1. Find Shop', desc: 'Search by ID or scan their QR code.', icon: '🔍' },
+    { title: '2. Send Files', desc: 'Upload PDFs or images securely.', icon: '📤' },
+    { title: '3. Print & Go', desc: 'Collect your prints at the shop.', icon: '🏃' }
+  ];
+
   return (
     <div className="app-container">
       <Navbar />
-      <div className="page page-md">
-        <div style={{ marginBottom: 32 }}>
+      <motion.div 
+        className="page page-md"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div style={{ marginBottom: 40, textAlign: 'center' }}>
+           <motion.div 
+             initial={{ scale: 0.9, opacity: 0 }} 
+             animate={{ scale: 1, opacity: 1 }} 
+             transition={{ delay: 0.2 }}
+             style={{ display: 'inline-flex', padding: '16px', background: 'var(--bg-card)', borderRadius: '50%', marginBottom: 24, boxShadow: 'var(--shadow-md)' }}
+           >
+             <Search size={40} color="var(--accent-primary)" />
+           </motion.div>
            <h1 className="page-title">Find a Printer</h1>
-           <p className="page-subtitle">Enter a Shop ID to securely send your documents</p>
+           <p className="page-subtitle" style={{ fontSize: '1.1rem' }}>Enter a Shop ID to securely send your documents</p>
         </div>
 
-        {/* Search box */}
-        <div className="search-container" ref={wrapperRef} style={{ marginBottom: 40 }}>
-          <div className="search-input-wrapper" style={{ padding: '4px 12px' }}>
-            <Search size={18} style={{ color: 'var(--text-muted)' }} />
+
+        <div className="search-container" ref={wrapperRef} style={{ marginBottom: 60, maxWidth: 600, margin: '0 auto 60px' }}>
+          <div className="search-input-wrapper" style={{ padding: '8px 16px', borderRadius: 'var(--radius-xl)' }}>
+            <Search size={24} style={{ color: 'var(--text-muted)' }} />
             <input
               id="printer-search-input"
               className="search-input"
@@ -125,9 +141,9 @@ const CustomerSearch = () => {
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => results.length > 0 && setShowResults(true)}
               autoComplete="off"
-              style={{ fontSize: 16 }}
+              style={{ fontSize: 18 }}
             />
-            {loading && <div className="spinner" style={{ width: 18, height: 18, borderWidth: 2, marginRight: 10 }} />}
+            {loading && <div className="spinner" style={{ width: 24, height: 24, borderWidth: 3, marginRight: 16 }} />}
             <input
               ref={fileInputRef}
               type="file"
@@ -136,66 +152,79 @@ const CustomerSearch = () => {
               style={{ display: 'none' }}
             />
             <button 
-              className="btn btn-ghost btn-sm" 
+              className="btn btn-ghost" 
+              style={{ padding: 12, borderRadius: 'var(--radius-lg)' }}
               onClick={() => fileInputRef.current?.click()}
               title="Upload QR Code"
-              style={{ color: 'var(--accent-primary)' }}
             >
-              <QrCode size={20} />
+              <QrCode size={24} color="var(--accent-primary)" />
             </button>
           </div>
 
-          {showResults && (
-            <div className="search-results">
-              {results.length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                  No shops found for "<strong>{query}</strong>"
-                </div>
-              ) : (
-                results.map((printer) => (
-                  <div
-                    key={printer._id}
-                    className="search-result-item"
-                    id={`search-result-${printer.publicId}`}
-                    onClick={() => handleSelect(printer)}
-                  >
-                    <div className="customer-avatar" style={{ background: 'var(--bg-secondary)', color: 'var(--accent-primary)' }}>
-                       <PrinterIcon size={18} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14 }}>
-                        {printer.printerName || printer.name}
-                      </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                        ID: {printer.publicId} {printer.location && `• ${printer.location}`}
-                      </div>
-                    </div>
-                    <button className="btn btn-secondary btn-sm">Select</button>
+          <AnimatePresence>
+            {showResults && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="search-results"
+                style={{ borderRadius: 'var(--radius-lg)', marginTop: 12 }}
+              >
+                {results.length === 0 ? (
+                  <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    No shops found for "<strong>{query}</strong>"
                   </div>
-                ))
-              )}
-            </div>
-          )}
+                ) : (
+                  results.map((printer, index) => (
+                    <motion.div
+                      key={printer._id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="search-result-item"
+                      id={`search-result-${printer.publicId}`}
+                      onClick={() => handleSelect(printer)}
+                      style={{ padding: '20px 24px' }}
+                    >
+                      <div className="customer-avatar" style={{ background: 'var(--accent-primary-dim)', color: 'var(--accent-primary)', width: 48, height: 48, borderRadius: 16 }}>
+                         <PrinterIcon size={24} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text-primary)' }}>
+                          {printer.printerName || printer.name}
+                        </div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
+                          <span className="badge badge-gray">ID: {printer.publicId}</span> {printer.location && `• ${printer.location}`}
+                        </div>
+                      </div>
+                      <ArrowRight size={20} color="var(--text-muted)" />
+                    </motion.div>
+                  ))
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div style={{ padding: 24, background: 'white', border: '1px solid var(--border)', borderRadius: 8 }}>
-           <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>How it works</h3>
-           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
-              <div style={{ fontSize: 13 }}>
-                 <div style={{ fontWeight: 600, marginBottom: 4 }}>1. Find Shop</div>
-                 <p style={{ color: 'var(--text-secondary)' }}>Search by ID or scan their QR code.</p>
-              </div>
-              <div style={{ fontSize: 13 }}>
-                 <div style={{ fontWeight: 600, marginBottom: 4 }}>2. Send Files</div>
-                 <p style={{ color: 'var(--text-secondary)' }}>Upload PDFs or images securely.</p>
-              </div>
-              <div style={{ fontSize: 13 }}>
-                 <div style={{ fontWeight: 600, marginBottom: 4 }}>3. Print & Go</div>
-                 <p style={{ color: 'var(--text-secondary)' }}>Collect your prints at the shop.</p>
-              </div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="card glass" 
+          style={{ padding: 32, borderRadius: 'var(--radius-xl)' }}
+        >
+           <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24, textAlign: 'center' }}>How PrintShield Works</h3>
+           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
+              {steps.map((step, idx) => (
+                <div key={idx} style={{ textAlign: 'center', padding: 24, background: 'rgba(255,255,255,0.5)', borderRadius: 'var(--radius-lg)' }}>
+                   <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>{step.icon}</div>
+                   <div style={{ fontWeight: 800, marginBottom: 8, fontSize: 16 }}>{step.title}</div>
+                   <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{step.desc}</p>
+                </div>
+              ))}
            </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

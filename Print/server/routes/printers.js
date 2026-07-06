@@ -3,8 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const { authenticate } = require('../middleware/auth');
 
-// GET /api/printers/search?q=PUBLICID
-// Search for a printer by their public Printer ID
+
 router.get('/search', authenticate, async (req, res) => {
   try {
     const { q } = req.query;
@@ -29,7 +28,7 @@ router.get('/search', authenticate, async (req, res) => {
   }
 });
 
-// GET /api/printers/:publicId  - get printer profile
+
 router.get('/:publicId', authenticate, async (req, res) => {
   try {
     const printer = await User.findOne({

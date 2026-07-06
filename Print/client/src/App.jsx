@@ -16,11 +16,11 @@ function App() {
       <ToastProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public */}
+
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Customer routes */}
+
             <Route path="/customer/search" element={
               <ProtectedRoute role="customer"><CustomerSearch /></ProtectedRoute>
             } />
@@ -31,12 +31,12 @@ function App() {
               <ProtectedRoute role="customer"><CustomerFiles /></ProtectedRoute>
             } />
 
-            {/* Printer routes */}
+
             <Route path="/printer/dashboard" element={
               <ProtectedRoute role="printer"><PrinterDashboard /></ProtectedRoute>
             } />
 
-            {/* Default redirect */}
+
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>

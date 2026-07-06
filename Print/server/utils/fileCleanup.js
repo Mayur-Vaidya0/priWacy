@@ -1,9 +1,6 @@
 const PrintJob = require('../models/PrintJob');
 
-/**
- * Deletes all expired print jobs from database.
- * Called by cron job and can be triggered manually.
- */
+
 const autoDeleteExpiredFiles = async () => {
   try {
     const now = new Date();

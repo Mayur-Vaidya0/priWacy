@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Upload, Send, ArrowLeft, MapPin, Printer, X, FileText, Image } from 'lucide-react';
+import { Upload, Send, ArrowLeft, MapPin, Printer as PrinterIcon, X, ShieldCheck } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Navbar from '../components/Navbar';
+import { motion } from 'framer-motion';
 
 const formatSize = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
@@ -95,52 +96,71 @@ const PrinterProfile = () => {
   return (
     <div className="app-container">
       <Navbar />
-      <div className="page page-md">
-        {/* Back */}
+      <motion.div 
+        className="page page-md"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
         <button
-          className="btn btn-ghost btn-sm"
+          className="btn btn-secondary btn-sm"
           onClick={() => navigate('/customer/search')}
-          style={{ marginBottom: 20, paddingLeft: 0 }}
+          style={{ marginBottom: 24, borderRadius: 'var(--radius-lg)' }}
         >
-          <ArrowLeft size={15} /> Back to Search
+          <ArrowLeft size={16} /> Back to Search
         </button>
 
-        {/* Printer Profile Header */}
-        <div className="printer-profile-header">
-          <div className="printer-profile-avatar">🖨️</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <h1 className="printer-profile-name">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="card glass" 
+          style={{ padding: '32px', marginBottom: 24, display: 'flex', alignItems: 'flex-start', gap: 24, borderRadius: 'var(--radius-xl)' }}
+        >
+          <div style={{ width: 64, height: 64, background: 'linear-gradient(135deg, var(--accent-primary) 0%, #818cf8 100%)', color: 'white', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(79,70,229,0.3)' }}>
+             <PrinterIcon size={32} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
+              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
                 {printer.printerName || printer.name}
               </h1>
-              <span className="badge badge-violet">🟢 Active</span>
+              <span className="badge badge-green" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{display:'inline-block',width:6,height:6,background:'#16a34a',borderRadius:'50%'}}></span> Active</span>
             </div>
-            <div className="printer-profile-id">Printer ID: {printer.publicId}</div>
-            {printer.location && (
-              <div className="printer-profile-location">
-                <MapPin size={13} /> {printer.location}
-              </div>
-            )}
+            <div style={{ display: 'flex', gap: 16, color: 'var(--text-secondary)', fontSize: 14 }}>
+               <span style={{ fontWeight: 600 }}>ID: {printer.publicId}</span>
+               {printer.location && (
+                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><MapPin size={14} /> {printer.location}</span>
+               )}
+            </div>
           </div>
-          <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <span className="badge badge-blue">Verified Printer</span>
+          <div style={{ textAlign: 'right' }}>
+            <span className="badge badge-blue" style={{ background: '#e0e7ff', color: '#3730a3' }}>Verified Shop</span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Upload Zone */}
-        <div className="card" style={{ padding: 24 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Upload size={17} style={{ color: 'var(--accent-blue)' }} />
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="card glass" 
+          style={{ padding: 32, borderRadius: 'var(--radius-xl)' }}
+        >
+          <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ background: 'var(--accent-primary-dim)', color: 'var(--accent-primary)', padding: 8, borderRadius: 10 }}>
+               <Upload size={20} />
+            </div>
             Send a Document
           </h2>
 
           <div
-            className={`upload-zone ${dragover ? 'dragover' : ''}`}
+            className={`upload-zone ${dragover ? 'active' : ''}`}
             onDragOver={(e) => { e.preventDefault(); setDragover(true); }}
             onDragLeave={() => setDragover(false)}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
             id="upload-dropzone"
+            style={{ marginBottom: 24 }}
           >
             <input
               ref={fileInputRef}
@@ -150,36 +170,40 @@ const PrinterProfile = () => {
               style={{ display: 'none' }}
               id="file-input"
             />
-            <div className="upload-icon">{dragover ? '📂' : '📁'}</div>
-            <div className="upload-text">
+            <div style={{ fontSize: '3rem', marginBottom: 16 }}>{dragover ? '📂' : '📁'}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
               {dragover ? 'Drop to upload' : 'Click or drag & drop your file'}
             </div>
-            <div className="upload-hint">PDF, JPG, PNG, GIF, WebP • Max 20MB</div>
+            <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>PDF, JPG, PNG, GIF, WebP • Max 20MB</div>
           </div>
 
           {file && (
-            <div className="upload-preview">
-              <div style={{ fontSize: 24 }}>{isImage ? '🖼️' : '📄'}</div>
+            <motion.div 
+               initial={{ opacity: 0, height: 0 }}
+               animate={{ opacity: 1, height: 'auto' }}
+               style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 16, background: 'white', borderRadius: 12, border: '1px solid var(--border)', marginBottom: 24 }}
+            >
+              <div style={{ fontSize: 32, background: 'var(--bg-secondary)', padding: 12, borderRadius: 12 }}>{isImage ? '🖼️' : '📄'}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="upload-preview-name">{file.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
                   {formatSize(file.size)} • {file.type}
                 </div>
               </div>
-              <span className="upload-preview-size">{formatSize(file.size)}</span>
               <button
-                className="btn btn-ghost btn-sm"
+                className="btn btn-ghost"
+                style={{ padding: 8, color: 'var(--accent-danger)' }}
                 onClick={(e) => { e.stopPropagation(); setFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
                 id="remove-file-btn"
               >
-                <X size={14} />
+                <X size={20} />
               </button>
-            </div>
+            </motion.div>
           )}
 
-          {/* Security notice */}
-          <div className="alert alert-info" style={{ marginTop: 16, marginBottom: 0 }}>
-            🔒 Files are AES-256 encrypted before sending. Auto-deleted after 24 hours.
+          <div className="alert alert-info" style={{ display: 'flex', alignItems: 'center', gap: 12, borderRadius: 12 }}>
+            <ShieldCheck size={24} style={{ color: '#1e40af', flexShrink: 0 }} />
+            <div style={{ fontSize: 14, color: '#1e40af' }}>Files are AES-256 encrypted before sending. Auto-deleted after 24 hours.</div>
           </div>
 
           <button
@@ -187,21 +211,21 @@ const PrinterProfile = () => {
             className="btn btn-primary btn-lg"
             onClick={handleSend}
             disabled={!file || uploading}
-            style={{ width: '100%', marginTop: 16 }}
+            style={{ width: '100%', marginTop: 24, height: 56, fontSize: 16 }}
           >
             {uploading ? (
               <>
-                <div className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
+                <div className="spinner" style={{ width: 20, height: 20, borderWidth: 3, borderTopColor: 'white' }} />
                 Encrypting & Sending…
               </>
             ) : (
               <>
-                <Send size={16} /> Send Securely to {printer.printerName || printer.name}
+                <Send size={20} /> Send Securely to {printer.printerName || printer.name}
               </>
             )}
           </button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

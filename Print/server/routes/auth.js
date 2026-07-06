@@ -6,7 +6,7 @@ const User = require('../models/User');
 const signToken = (userId) =>
   jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-// POST /api/auth/register
+
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role, printerName, location } = req.body;
@@ -47,7 +47,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// POST /api/auth/login
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -87,7 +87,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET /api/auth/me  (verify token)
+
 router.get('/me', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];

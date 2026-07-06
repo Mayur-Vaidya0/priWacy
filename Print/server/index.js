@@ -13,7 +13,6 @@ const { autoDeleteExpiredFiles } = require('./utils/fileCleanup');
 
 const app = express();
 
-// Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
@@ -23,20 +22,16 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/printers', printerRoutes);
 
-// Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
-// Connect to MongoDB and start server
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
 
-    // Auto-delete expired files every hour
     cron.schedule('0 * * * *', () => {
       console.log('🕐 Running auto-delete for expired files...');
       autoDeleteExpiredFiles();
